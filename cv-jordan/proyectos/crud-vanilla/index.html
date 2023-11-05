@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="style.css">
+        <title>Crud Fecth</title>
+        <!--Icons-->
+         <link rel="icon" href="../../src/favicon.png">
+    </head>
+
+    <body>
+        <main>
+            <h1> Crud Fecth</h1>
+            <div class="container">
+                <section class="container-form">
+
+                    <form class="card-form">  
+                        <p class="contactos"> Contactos</p>
+                        <h2 class="crud-title">Agregar usuario</h2>
+
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" name="nombre" id="nombre" placeholder="Ingrese nombre" required>
+                        <label for="email">Email:</label>
+                        <input type="text" name="email" id="email" placeholder="Ingrese email" required>
+                        <label for="ocupacion">Ocupación:</label>
+                        <input type="text" name="ocupacion" id="ocupacion" placeholder="Ingrese ocupación" required>
+                        <div class="btn">
+                            <button type="submit" value="success">Guardar</button>
+                            <input type="hidden" name="id">
+                        </div>
+                   
+                    </form>
+                </section>
+                <section class="container-lis-contacts">
+                    <article>
+                        <h2>Ver santos</h2>
+                        <table class="crud-table">
+                            <thead>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Ocupación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </article>
+                    <template id="crud-template">
+                        <tr>
+                            <td class="id"> </td>
+                            <td class="nombre"> </td>
+                            <td class="email"> </td>
+                            <td class="ocupacion"> </td>
+                            <td>
+                                <button class="edit">edit</button>
+                                <button class="delete">eliminar</button>
+                            </td>
+                        </tr>
+                    </template>
+                </section>
+            </div>
+        </main>
+        <script>
+
+            const $template = document.getElementById("crud-template").content
+            const $frament = document.createDocumentFragment();
+            const $table = document.querySelector('.crud-table');
+            const $form = document.querySelector('.card-form');
+            const $title = document.querySelector(".crud-title");
+
+            const getData = async () => {
+                try {
+                    let res = await fetch('http://localhost:3000/contactos')
+
+                    let json = await res.json();
+
+                    // console.log(json);
+
+                    if (!res.ok) throw { status: res.status, statusText: res.statusText };
+
+                    json.forEach(el => {
+                        /*Agregaos a la vista*/
+                        $template.querySelector(".id").textContent = el.id;
+                        $template.querySelector(".nombre").textContent = el.nombre;
+                        $template.querySelector(".email").textContent = el.email;
+                        $template.querySelector('.ocupacion').textContent = el.ocupacion;
+
+
+                        /* Agregamos dataset para que se puedan editar. **/
+                        $template.querySelector(".edit").dataset.id = el.id;
+                        $template.querySelector(".edit").dataset.nombre = el.nombre;
+                        $template.querySelector(".edit").dataset.email = el.email;
+                        $template.querySelector(".edit").dataset.ocupacion = el.ocupacion;
+
+
+                        $template.querySelector(".delete").dataset.id = el.id;
+
+
+                        let $clone = document.importNode($template, true)
+
+                        $frament.appendChild($clone);
+
+                    });
+
+                    $table.querySelector("tbody").append($frament);
+
+
+                } catch (error) {
+                    let message = error.statusText || "Ocurrio un error";
+                    $table.insertAdjacentHTML("afterend", `<p> <b>Error ${error.status}: ${message} </b> </p> `);
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", getData);
+
+
+            document.addEventListener('submit', async (e) => {
+                e.preventDefault()
+                // console.log(e);
+                // console.log(e.target.id.value);
+
+                if (!e.target.id.value) {
+
+                   // console.log(`listo para crear ... si los datos viene diferete de vacio`);
+
+                    try {
+
+                        let options = {
+                            method: "POST",
+                            headers: {
+                                "Content-type": "application/json; charset=utf-8"
+                            },
+                            body: JSON.stringify({
+                                nombre: e.target.nombre.value,
+                                email: e.target.email.value,
+                                ocupacion: e.target.ocupacion.value
+                            })
+                        }
+
+                        let res = await fetch("http://localhost:3000/contactos", options);
+                        let json = await res.json();
+                        alert('Agregado con exito...');
+
+                        if (!res.ok) throw { status: res.status, statusText: res.statusText };
+                        location.reload();
+
+                    } catch (error) {
+                        let message = err.statusText || "Ocurrio un error";
+                        $form.insertAdjacentHTML("afterend", `<p>
+                                            <b>Error ${error.status}: ${message}
+                                        </b> </p> `);
+                    }
+
+
+
+                }
+                else{
+
+                    //Pust
+
+                    try {
+                        
+                        let options = {
+
+                                method: "PUT",
+                                headers:{
+                                    "Content-type": "application/json; charset=utf-8"
+                                },
+
+                            body: JSON.stringify({
+                                nombre: e.target.nombre.value,
+                                email: e.target.email.value,
+                                ocupacion: e.target.ocupacion.value    
+                            })
+                        }
+
+
+                        let res = await fetch(`http://localhost:3000/contactos/${e.target.id.value}`, options);
+
+                        let json  = await res.json();
+                        alert('Cambios realizados con existo! ... ')
+
+                        if (!res.ok) throw { status: res.status, statusText: res.statusText };
+                            location.reload();
+
+
+
+                    } catch (error) {
+
+                            let message = error.statusText || "Ocurrio un error";
+                            $form.insertAdjacentHTML("afterend", `<p> <b>Error ${error.status}: ${message} </b> </p> `)
+                    }
+
+
+                }
+
+            })
+
+            document.addEventListener("click", async (e) => {
+
+                if (e.target.matches(".edit")) {
+                    $title.textContent = "Edtar Usuario";
+                   // console.log(e.target.matches(".edit")); si existe tres True
+                     //console.log(e.target.dataset.nombre);
+                    $form.nombre.value = e.target.dataset.nombre;
+                    $form.email.value = e.target.dataset.email;
+                    $form.ocupacion.value = e.target.dataset.ocupacion;
+                    $form.id.value = e.target.dataset.id;
+                }
+
+
+                
+                if (e.target.matches(".delete")) {
+
+                let isDelete = confirm(`Estas seguo de eliminar ${e.target.dataset.id} ? `);// si es true
+
+
+                if (isDelete) {
+                    try {
+
+                        let options = {
+                            method: "DELETE",
+                            headers: {
+                                "Content-type": "application/json; charset=utf-8"
+                            }
+                        }
+
+                        let res = await fetch(`http://localhost:3000/contactos/${e.target.dataset.id}`, options);
+                        let json = await res.json();
+                        if (!res.ok) throw { status: res.status, statusText: res.statusText };
+                        location.reload();
+
+                    } catch (error) {
+                        let message = err.statusText || "Ocurrio un error";
+                        alert(`Error ${xhr.status}: ${message}`);
+                    }
+                }
+                }
+
+
+
+
+            })
+
+
+
+        </script>
+    </body>
+
+</html>

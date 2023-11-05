@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pokemon</title>
+        <!--Icons-->
+        <link rel="icon" href="../../src/favicon.png">
+        <link rel="stylesheet" href="assets/style.css">
+
+    </head>
+
+    <body>
+        <h1>Pokémon</h1>
+        <nav class="links"></nav>
+        <main class="grid-fluid"></main>
+        <script>
+            const d = document;
+
+            const main = d.querySelector('main'),
+                $links = d.querySelector('.links');
+                
+            
+            const urlApi = 'https://pokeapi.co/api/v2/pokemon';
+
+            ///https://pokeapi.co/api/v2/ability/?limit=20&offset=20 -> paginación
+
+            async function loadPokemos(url) {
+
+                try {
+
+                    main.innerHTML = `<img class="loader" src="assets/my-loader.svg" alt="Cargando...">`;
+
+
+                    let res = await fetch(url);
+                    let json = await res.json(); // obtenemos los primeros 20 enpiont
+
+                    let $template = '', $prevLink, $nextLinl;
+                    console.log(json);
+                    /*
+                    // 
+                    {count: 1292, next: 'https://pokeapi.co/api/v2/pokemon?offset=20&limit=20', previous: null, results: Array(20)}
+                  
+                    results: 
+                        Array(20)
+                        0 : {name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/'}
+                        1: {name: 'ivysaur', url: 'https://pokeapi.co/api/v2/pokemon/2/'}
+                        2: {name: 'venusaur', url: 'https://pokeapi.co/api/v2/pokemon/3/'}
+                    */
+
+                    if (!res.ok) throw { status: res.status, statusText: res.statusText }
+
+                    /*
+                    nombre y url
+                    (20) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…},
+
+                    RESULT es una propiedad de la respuesta json
+                    */
+                    for (let i = 0; i < json.results.length; i++) {
+                        //iteramos esos nombres y esas urls                     
+                        const element = json.results[i];
+                        /*
+                           {name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/'}
+                        */
+                        try {
+                            /*Aqui hacemos otra peticion a la url del pokemon->  para obtener los atributos de pokemon como el nombre la experiencia, la ibucacion y mas */
+                            let res = await fetch(element.url)
+                            let pokemonJson = await res.json();
+
+                            if (!res.ok) throw { status: res.status, statusText: res.statusText }
+
+
+
+
+
+
+                            try {
+                                let res = await fetch(pokemonJson.species.url)
+                                let resJson = await res.json();
+                                if (!res.ok) throw { status: res.status, statusText: res.statusText }
+
+
+                                const valoresUnicos = new Set();
+                                const valoresRepetidos = []
+
+                                for (let i = 0; i < resJson.flavor_text_entries.length; i++) {
+
+                                    const getIdioma = resJson.flavor_text_entries[i];
+
+
+                                    if (getIdioma.language.name === 'es') {
+                                        const flavorText = getIdioma.flavor_text;
+
+                                        if (valoresUnicos.has(flavorText)) {
+                                            valoresRepetidos.push(flavorText);
+                                        } else {
+                                            valoresUnicos.add(flavorText);
+                                        };
+                                    }
+                                }
+
+
+                                let $texto = '';
+
+                                valoresUnicos.forEach(texto => {
+                                    $texto += `<p> ${texto} </p>`
+                                });
+
+
+                                $template += `
+                                    <figure>
+                                    <img src="${pokemonJson.sprites.front_default}" alt="${pokemonJson.name}">                                    
+                                    <b>ID:${pokemonJson.id}</b> <p>Pokemon: ${pokemonJson.name}</p>
+                                    <p>Experiencia: ${pokemonJson.base_experience} </p> 
+                                    <details>
+                                        <summary>Ver mas...</summary>
+                                         ${$texto}
+                                         </details>
+                                    </figure>
+                                                `;
+                                main.innerHTML = $template;
+                          
+                                
+
+                           
+                                /*   botones de enlace 
+                                 next: 'https://pokeapi.co/api/v2/pokemon?offset=20&limit=20', previous: null
+                                */                              
+                                $prevLink =   json.previous ? `<a href="${json.previous}">👈</a>`: '';
+                                 $nextLinl =   json.next ? `<a href="${json.next}"> 👉</a>`: '';   
+
+                                 $links.innerHTML = $prevLink + ' ' + $nextLinl;
+
+
+
+
+
+
+                            } catch (error) {
+                                let message = error.statusText || 'Ocurrio un error';
+                                main.innerHTML = `<p>Error en la tercera peticion obteniedo textos : ${error.status}: ${message}</p>`
+                            }
+
+
+
+
+
+
+
+                             
+
+                        } catch (error) {
+                            let message = error.statusText || 'Ocurrio un error';
+                            $template = `
+                        <figcaption> ERROR en la segunda petición  src="${error.statusText}: ${message} " </p>
+                        </figcaption>
+                        
+                        `
+                        }
+
+
+
+
+                    }
+
+
+                    main.innerHTML = $template;
+
+
+                } catch (error) {
+                    let message = error.statusText || 'Ocurrio un error';
+                    main.innerHTML = `<p>Error en la primera peticion : ${error.status}: ${message}</p>`
+                }
+            }
+
+
+
+
+            d.addEventListener('DOMContentLoaded', e => loadPokemos(urlApi))
+
+
+
+            /* delegando eventos de click  " CUALQUIER CLICK"*/
+            d.addEventListener('click', e => {
+                //console.log(e.target.matches('.links a')); si lo encuentra devuelve TRUE
+                if (e.target.matches('.links a')) {
+                    e.preventDefault();
+                    loadPokemos(e.target.getAttribute('href'))
+                    
+                }
+            })
+
+        </script>
+    </body>
+
+</html>

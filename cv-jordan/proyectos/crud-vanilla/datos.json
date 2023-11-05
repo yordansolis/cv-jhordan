@@ -1,0 +1,29 @@
+{
+  "contactos": [
+    {
+      "nombre": "Cristiano Ronaldo ",
+      "email": "crz@example.com",
+      "ocupacion": "Deportist",
+      "id": 2
+    },
+    {
+      "nombre": "neymar",
+      "email": "yordansoli2@gmail.com",
+      "ocupacion": "sasad",
+      "id": 4
+    },
+    {
+      "nombre": "Johan solis",
+      "email": "yordansolis@gmail.com",
+      "ocupacion": "Abogado",
+      "id": 5
+    },
+    {
+      "nombre": "Agustina",
+      "email": "agustina@example.com",
+      "ocupacion": "docuente",
+      "id": 6
+    }
+  ],
+  "animales": []
+}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boscador Tv</title>
+   <!--Icons-->
+   <link rel="icon" href="../../src/favicon.png">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<style>
+
+</style>
+<body>
+
+    <h1>Buscar Show de Tv</h1>
+
+    <label for="busqueda">Nombre del Show:</label>
+    <input 
+     type="search"
+     id="search"
+     name="busqueda" 
+     placeholder="Ingrese su búsqueda aquí"
+     autocomplete="off"
+     >
+     <section id="shows" class="grid-fluid"></section>
+
+     <template id="show-template">
+        <article class="show">
+            <h3></h3>
+            <div></div>
+            <img>
+            <a></a>
+        </article>
+
+     </template>
+    
+
+
+    <script>
+        const d = document,
+        $template = d.getElementById('show-template').content,
+        $fragment = d.createDocumentFragment(),
+        $shows =d.getElementById('shows');
+
+        d.addEventListener('keypress', async e => {
+            
+            if (e.target.matches('#search')) {
+                 //  console.log(e.key); 
+                 if (e.key === 'Enter') {
+
+                    try {
+
+                        $shows.innerHTML =  `<img class="loader" src="assets/my-loader.svg" alt="Cargando...">`;
+
+                        let searchValue = e.target.value.toLowerCase();
+                        let api = `https://api.tvmaze.com/search/shows?q=${searchValue}`;
+                      
+                      
+                        const res= await fetch(api);
+                        const json = await res.json();
+                        //console.log(json);
+                                
+                    
+
+                    if (!res.ok) throw { status: res.status, statusText: res.statusText }
+                        
+                    if (json.length === 0) {
+                        $shows.innerHTML = `<h2> No hay nada que  mostrar <mark>${searchValue}</mark></h2>`;
+                  
+                    }else{
+                  
+                  
+                        json.forEach(function (index) {
+                             $template.querySelector('h3').textContent =   index.show.name;
+                             $template.querySelector('div').innerHTML =   index.show.summary ? index.show.summary: 'sin descripción...';
+                             $template.querySelector('img').src = index.show.image ? index.show.image.medium: 'https://static.tvmaze.com/uploads/images/medium_landscape/1/4388.jpg';
+ 
+                             $template.querySelector('img').alt = index.show.name;
+
+                             $template.querySelector('img').style.maxWidth  = '100%';
+
+                             $template.querySelector('a').href = index.show.url ?  index.show.url : "#";
+                             $template.querySelector('a').target = index.show.url ?  '_blank' : "_self";
+                             $template.querySelector('a').textContent = index.show.url ?  'Ver mas...' : "";
+
+
+
+
+                             
+                             let $clone = d.importNode($template, true);
+                             $fragment.appendChild($clone);
+                        });
+                        $shows.innerHTML = '';
+                        $shows.appendChild($fragment);
+                  
+                        }
+
+                    } catch (error) {
+                        
+                        let message = error.statusText || 'Ocurrio un error';
+                        $shows.innerHTML = `<p>Error : ${error.status}: ${message}</p>`
+                    } 
+                    
+                 }
+
+            }
+
+        });
+
+
+
+
+
+    </script>
+
+    
+
+    
+</body>
+</html>

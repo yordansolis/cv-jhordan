@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>WordPress REST Api</title>
+         <!--Icons-->
+        <link rel="icon" href="../../src/favicon.png">
+        <style>
+            *{
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+            body{
+                font-family: sans-serif;
+                font-size: 17px;
+                background-color: #e9da65;
+                
+            }
+            .container-grid{
+                background-color: aliceblue;
+                border-radius: 1rem;
+                padding: 15px;
+                margin: 15px;
+                max-width: 900px;
+                margin: auto;
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+            .container-grid{
+                display: flex;            
+                flex-direction: column;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+            }
+            aside{
+                text-align: center;
+                margin-bottom: 50px;
+                background-color: rgba(245, 245, 233, 0.804)
+            }
+            
+            a{
+                text-decoration: none;
+                color:black;
+            }
+            .loader {
+                display: none;
+                margin: auto;
+            }
+            h1{
+                text-align: center;
+            }
+            .post-title{
+                text-align: center;
+            }
+            .post-image{
+                width: 90%;
+            }
+            .avatar-img{
+                width: 20px;
+            }
+            .post-author{
+                display: flex;
+
+            }
+            .post-excerpot{
+                font-weight: bold;
+            }
+      
+        
+            .unicla{
+                cursor: pointer;
+            }.unicla:hover{
+               color: rgb(255, 237, 100);
+            }
+
+
+
+ 
+
+
+        </style>
+    </head>
+
+    <body>
+        <section class="container-grid">
+        <h1>WordPress Rest Apis Uniclaretiana</h1>
+        <article id="site" class="site"></article>
+        <section id="posts" class="posts"></section>
+        <img class="loader" src="assets/my-loader.svg" alt="Cargando...">
+        <template id="poast-template">
+            <article class="post">
+                <aside>
+                    <h2 class="post-title"></h2>
+                    <img class="post-image">
+                    <figure class="post-author"></figure>
+                    <small class="post-date"></small>
+                    <a href="" class="post-excerpot"></a>
+           
+    
+                </aside>
+            </article>
+        </template>
+    </section>
+        <script>
+
+            /*
+            DOCUMENTACION: 
+            https://developer.wordpress.org/rest-api/
+            https://developer.wordpress.org/rest-api/reference/
+            https://wordpress.org/
+            https://codex.wordpress.org/The_Loop
+
+
+            */
+
+            const d = document, w =  window;
+
+                $site = d.getElementById('site'),
+                $posts = d.getElementById('posts'),
+                $loader = d.querySelector('.loader'),
+                $template = d.getElementById('poast-template').content,
+                $fragment = d.createDocumentFragment(),
+                DOMAIN = 'https://www.uniclaretiana.edu.co',
+                SITE = `${DOMAIN}/wp-json`,
+                API_WP = `${SITE}/wp/v2`,  //TRAE LOS ENPOISN
+
+                // seleccionamos el enpoin que queremos traer !
+                POSTS = `${API_WP}/posts?_embed`, //aqui estamos pasando otro parametro para concadenar 2 peticiones por url
+                PAGE = `${API_WP}/pages`,
+                CATEGORIES = `${API_WP}/categories`;
+
+
+
+
+            function getSiteData() {
+
+                fetch(SITE)
+                    .then(res => res.ok ? res.json() : Promise.reject(res))
+                    .then(json => {
+                       console.log(json);
+
+
+                    
+                       $site.innerHTML = `
+                       <div class="site-content">
+                        <h1>${json.description}</h1>
+                         <p>
+                            <a class="unicla" href='${json.url}' target ='_blank'>url ${json.name}</a>    
+                            </p>
+                    <p> ${json.timezone_string}</p>
+                    </dic>
+                `;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        let message = err.statusText || 'Ocurrio un error';
+                        $site.innerHTML = `<p>Error: ${err.status}: ${message}</p>`;
+
+                    });
+            }
+
+
+
+
+
+
+            let page=1,
+            perPage = 5;
+
+            function getPosts() {
+
+                $loader.style.display = 'block';
+
+                fetch(`${POSTS}&page=${page}&per_page=${perPage}`)
+                    .then(res => res.ok ? res.json() : Promise.reject(res))
+                    .then(json => {
+                     //   console.log(json);
+                        json.forEach(el => {
+
+                            $template.querySelector('.post-image').src = el._embedded['wp:featuredmedia'][0].source_url;
+                            $template.querySelector('.post-image').alt = el.title.rendered;
+                            $template.querySelector('.post-title').innerHTML = el.title.rendered;
+
+
+                            $template.querySelector('.post-author').innerHTML = `
+                            <img class="post-image avatar-img"
+                             src ="${el._embedded.author[0].avatar_urls["48"]}"
+                             alt="${el._embedded.author[0].name}"                            
+                                 >
+
+                            <figcaption>${el._embedded.author[0].name} </figcaption>  
+                            `;
+
+                            $template.querySelector('.post-date').innerHTML = "Fecha: " + new Date(el.date).toLocaleDateString();
+
+                            $template.querySelector('.post-excerpot').innerHTML = "Ver publicación original...";
+                            $template.querySelector('.post-excerpot').href = el.link;
+                            $template.querySelector('.post-excerpot').target = '_blank';
+
+                         //   $template.querySelector('.post-content article').innerHTML = el.content.rendered;
+                            
+
+                            let $clone = d.importNode($template, true);
+                            // clonamos
+                            $fragment.appendChild($clone);
+
+                        });
+                        //aprengamos a sus hijos
+                        $posts.appendChild($fragment)
+                        $loader.style.display = 'block';
+
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        let message = err.statusText || 'Ocurrio un error';
+                        $site.innerHTML = `<p>Error: ${err.status}: ${message}</p>`;
+                        $loader.style.display = 'none';
+                    });
+
+            }
+
+
+            d.addEventListener('DOMContentLoaded', e => {
+                getSiteData()
+                getPosts()
+            })
+
+
+
+            
+
+
+
+            w.addEventListener('scroll', e => {
+                /* Estas son propiedades del scroll*/
+                const {scrollTop, clientHeight, scrollHeight} = document.documentElement;
+
+         /*
+                console.log('1 ', scrollTop);  // scroll de desplazamiento           
+                console.log('2 ',clientHeight); // altura de la pantalla
+               
+                console.log('3 el mayor  ',scrollHeight); // total de distancia de scroll
+                console.log('suma: ', scrollTop + clientHeight);
+
+          */
+
+               if (scrollTop + clientHeight >= scrollHeight) {
+                    // console.log('cargar mass..', scrollTop + scrollHeight);
+                    page++;
+                    getPosts();
+               }
+            })
+
+        </script>
+    </body>
+
+</html>

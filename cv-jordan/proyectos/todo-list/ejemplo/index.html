@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Document</title>
+</head>
+<body>
+
+    <div class="lista">
+        <ul>
+          <li class="elemento">Elemento 1</li>
+          <li class="elemento">Elemento 2</li>
+          <li class="elemento">Elemento 3</li>
+        </ul>
+      </div>
+      
+      <script>
+        // Obtén todos los elementos con la clase "elemento"
+const elementos = document.querySelectorAll('.elemento');
+
+// Agrega un evento de clic a cada elemento
+elementos.forEach(elemento => {
+  elemento.addEventListener('click', () => {
+    console.log(`Hiciste clic en: ${elemento.textContent}`);
+  });
+});
+
+      </script>
+    
+</body>
+</html>

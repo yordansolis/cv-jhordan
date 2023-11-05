@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TodoList</title>
+        <link rel="shortcut icon" href="icon/todo-list.png" type="image/x-icon">
+        <link rel="stylesheet" href="css/style.css">
+         <!--Icons-->
+         <link rel="icon" href="../../src/favicon.png">
+    </head>
+
+    <body>
+        <section class="container">
+            <section class="form-todo-list">
+                <div class="list">
+                    <h1 class="title-todo-list">Aplicación de tareas Js.</h1>
+                </div>
+                <br>
+                <form id="form-task">
+                    <div class="list">
+                        <div>
+                            <input type="text" class="input-list" name="addtarea" required>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="list">
+                        <button type="submit" class="add-btn"> Agregar tarea</button>
+                    </div>
+                </form>
+                
+         
+    
+            </section>
+        </section>
+
+
+        <section id="tasks"></section>
+
+
+        <template id="lists-post">
+       <div>
+           <p class="task"></p>
+           <p class="icons"></p>
+       </div>
+       </template>
+
+
+        <script src="js/script.js"></script>
+    </body>
+
+</html>
