@@ -466,7 +466,7 @@ form{
     /*formulario*/
 
     .contact {
-        height: 130vh;
+        height: 125vh;
         background-color: #250344;
     }
 
@@ -491,7 +491,7 @@ form{
 
 @media screen and (max-width: 375px) {
     .contact {
-        height: 140vh;
+        height: 125vh;
         background-color: #250344;
     }
 }
